@@ -1,0 +1,333 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create taskleaf infra [ALB EC2*2 RDS*2 S3]
+
+
+
+# ---------------------------------------- #
+#   セキュリティ上テンプレートに書き込めない内容
+# ---------------------------------------- #
+Parameters:
+  DBUser:
+    Description: The database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: "[a-zA-Z0-9]*"
+    # AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    NoEcho: 'true'
+    Type: String
+    MinLength: '6'
+    MaxLength: '41'
+    AllowedPattern: "[a-zA-Z0-9]*"
+    # AllowedPattern: "[a-zA-Z0-9]*"
+    ConstraintDescription: must contain only alphanumeric characters.
+# 22番ポートを0.0.0.0/0からEC2のCIDRに変えてセキュリティをあげることで
+# RDSのユーザー名、パスワードもテンプレートに書いちゃダメだろうか？
+
+
+# ---------------------------------------- #
+#   主だった変数定義  prefix: taskleaf
+# ---------------------------------------- #
+Mappings:
+  Config:
+    VPC:
+      CIDR: 10.0.0.0/16
+    PublicSubnet:
+      CIDR1a: 10.0.10.0/24
+      CIDR1c: 10.0.11.0/24
+    PrivateSubnet:
+      CIDR1a: 10.0.20.0/24
+      CIDR1c: 10.0.21.0/24
+  # AZ:
+  #   1a: "us-east-2a"  # Mappingに入れるとエラー
+  #   1c: "us-east-2c" 
+
+    EC2:
+      KeyName: raise-ohio
+      ImageId: ami-0cea7ceaa242f4ad6
+      InstanceType: t2.nano
+
+    RDS:
+      InstanceClass: db.t2.micro
+
+
+
+# ---------------------------------------- #
+#   リソース定義
+# ---------------------------------------- #
+Resources: 
+  # VPC Create
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !FindInMap [ Config, VPC, CIDR ]
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: taskleaf-vpc
+  # IGW Create
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: taskleaf-igw
+  # VPC+IGW
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  # RT Create
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: taskleaf-public-rt
+  # IGW + Pub-RT
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway  # これ必要？？？
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  # Pub-Subnet-A Create
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PublicSubnet, CIDR1a ]
+      AvailabilityZone: us-east-2a
+      MapPublicIpOnLaunch: true # IP有効化
+      Tags:
+      - Key: Name
+        Value: taskleaf-public-subnet-a
+  # Pub-RT + Pub-Subnet-A
+  RouteTableAssociationPublicSubnetA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+  # Pub-Subnet-C Create
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PublicSubnet, CIDR1c ]
+      AvailabilityZone: us-east-2c
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: taskleaf-public-subnet-c
+  # Pub-RT + Pub-Subnet-C    # 一度にアソシエートできないか？ 
+  RouteTableAssociationPublicSubnetC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
+
+  # Pri-Subnet-A Create
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PrivateSubnet, CIDR1a ]
+      AvailabilityZone: us-east-2a
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: taskleaf-private-subnet-a
+  # Pri-Subnet-C Create
+  PrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PrivateSubnet, CIDR1c ]
+      AvailabilityZone: us-east-2c
+      MapPublicIpOnLaunch: true
+      Tags:
+      - Key: Name
+        Value: taskleaf-private-subnet-c
+
+
+# ---------------------------------------- #
+  #EC2-A Create
+  EC2A:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !FindInMap [ Config, EC2, KeyName ]
+      ImageId: !FindInMap [ Config, EC2, ImageId ]
+      InstanceType: !FindInMap [ Config, EC2, InstanceType ]
+      Monitoring: false
+      Tags:
+        - Key: Name
+          Value: taskleaf-ec2-a
+      NetworkInterfaces: # この記述は要らない？？
+        - AssociatePublicIpAddress: true
+          PrivateIpAddress: 10.0.10.10
+          DeviceIndex: 0  # アタッチの順序 不要？？
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          SubnetId: !Ref PublicSubnetA  # AZ指定は不要になる…ハズ # レイヤー１個上で定義もできる
+
+  # ↓ほぼ上記EC2のコピーなのを省略できないか
+  EC2C:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName: !FindInMap [ Config, EC2, KeyName ]
+      ImageId: !FindInMap [ Config, EC2, ImageId ]
+      InstanceType: !FindInMap [ Config, EC2, InstanceType ]
+      Monitoring: false
+      Tags:
+        - Key: Name
+          Value: taskleaf-ec2-c
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          PrivateIpAddress: 10.0.11.10
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          SubnetId: !Ref PublicSubnetC
+  # SG for EC2
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Connect 22 80 3000'
+      GroupName: taskleaf-ec2-sg
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0 
+
+
+# ---------------------------------------- #
+  # ALB Create
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: taskleaf-alb
+      Scheme: internet-facing
+      SecurityGroups:
+        - Ref: ALBSecurityGroup
+      Subnets:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetC
+  # ALB + TG
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      LoadBalancerArn: !Ref ALB
+      Port: 80
+      Protocol: HTTP
+  # SG for ALB
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: '80'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  # TG for ALB
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckPath: "/"
+      HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
+      Name: taskleaf-alb-tg
+      Port: 80
+      Protocol: HTTP   # Protocolの値によってALBとNLBを区別
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '20'
+      Targets:
+        - Id: !Ref EC2A
+        - Id: !Ref EC2C
+      Port: 80
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref VPC
+  # なんだかポート80の定義が多すぎて厄介 →減らせるか？少しずつ理解
+
+
+# ---------------------------------------- #
+  #DB-Sub-Group Create
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: taskleaf-db-subnet-group
+      DBSubnetGroupDescription: DB subnet group
+      SubnetIds:
+      - !Ref PrivateSubnetA
+      - !Ref PrivateSubnetC
+
+  # RDS Create
+  RDS:
+    Type: AWS::RDS::DBInstance
+    DependsOn: DBSubnetGroup
+    Properties:
+      DBInstanceIdentifier: taskleaf-rds
+      Engine: MySQL
+      EngineVersion: 5.7.22
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      # DBClusterIdentifier: !Ref RDSCluster
+      DBInstanceClass: !FindInMap [ Config, RDS, InstanceClass ]
+      StorageType: gp2
+      PubliclyAccessible: false
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: false
+      PreferredBackupWindow: "18:00-18:30"
+      PreferredMaintenanceWindow: "sat:19:00-sat:19:30"
+      AutoMinorVersionUpgrade: false
+      Port: 3306
+      VPCSecurityGroups: 
+        - !GetAtt RDSSecurityGroup.GroupId   # 倫理IDではなく物理ID
+      CopyTagsToSnapshot: true
+      BackupRetentionPeriod: 30
+      MultiAZ: 'true'
+
+  # SG for RDS
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Connect 3306'
+      GroupName: taskleaf-rds-sg
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0

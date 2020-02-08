@@ -1,0 +1,148 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create VPC & Subnet
+
+
+
+Parameters:
+  Prefix:
+    Description: Prefix of Name.
+    Type: String
+    
+
+
+Mappings:
+  Config:
+    VPC:
+      CIDR: 10.0.0.0/16
+    PublicSubnet:
+      CIDR1a: 10.0.10.0/24
+      CIDR1c: 10.0.11.0/24
+    PrivateSubnet:
+      CIDR1a: 10.0.20.0/24
+      CIDR1c: 10.0.21.0/24
+    # AZ:
+    #   1a: "us-east-2a"  → CREATE_FAILED!!
+    #   1c: "us-east-2c"  → Value of property AvailabilityZone must be of type String
+
+
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !FindInMap [ Config, VPC, CIDR ]
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value: !Sub "${Prefix}-vpc"
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub "${Prefix}-igw" 
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: !Sub "${Prefix}-public-rt" 
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    DependsOn: AttachGateway
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PublicSubnet, CIDR1a ]
+      AvailabilityZone: us-east-2a
+      Tags:
+      - Key: Name
+        Value:  !Sub "${Prefix}-public-subnet-a" 
+  RouteTableAssociationPublicSubnetA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PublicSubnet, CIDR1c ]
+      AvailabilityZone: us-east-2c
+      Tags:
+      - Key: Name
+        Value: !Sub "${Prefix}-public-subnet-c" 
+  RouteTableAssociationPublicSubnetC:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetC
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PrivateSubnet, CIDR1a ]
+      AvailabilityZone: us-east-2a
+      Tags:
+      - Key: Name
+        Value: !Sub "${Prefix}-private-subnet-a" 
+
+  PrivateSubnetC:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !FindInMap [ Config, PrivateSubnet, CIDR1c ]
+      AvailabilityZone: us-east-2c
+      Tags:
+      - Key: Name
+        Value: !Sub "${Prefix}-private-subnet-c" 
+
+
+
+Outputs:
+  StackVPC:
+    Description: The ID of the VPC
+    Value: !Ref VPC
+    Export:
+      Name: !Sub "${Prefix}-vpc-id"
+
+  StackPublicSubnetA:
+    Description: The ID of the Public Subnet a
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: !Sub "${Prefix}-public-subnet-a-id"
+
+  StackPublicSubnetC:
+    Description: The ID of the Public Subnet c
+    Value: !Ref PublicSubnetC
+    Export:
+      Name: !Sub "${Prefix}-public-subnet-c-id"
+
+  StackPrivateSubnetA:
+    Description: The ID of the Private Subnet a
+    Value: !Ref PrivateSubnetA
+    Export:
+      Name: !Sub "${Prefix}-private-subnet-a-id"
+
+  StackPrivateSubnetC:
+    Description: The ID of the Private Subnet c
+    Value: !Ref PrivateSubnetC
+    Export:
+      Name: !Sub "${Prefix}-private-subnet-c-id" 
+

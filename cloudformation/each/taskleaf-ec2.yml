@@ -1,0 +1,164 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create ELB EC2
+
+
+
+Parameters:
+  KeyName: 
+    Description : KeyPair Name.
+    Type: AWS::EC2::KeyPair::KeyName
+
+
+
+Mappings:
+  Config:
+    EC2:
+      ImageId: ami-0cea7ceaa242f4ad6
+      InstanceType: t2.nano
+# ------------------------------------------------------------ #
+    # Edit Project name → [  taskleaf  ]
+# ------------------------------------------------------------ #
+
+
+
+Resources: 
+  EC2A:
+    Type: AWS::EC2::Instance
+    Properties:
+      KeyName:
+        Ref: KeyName
+      ImageId: !FindInMap [ Config, EC2, ImageId ]
+      InstanceType: !FindInMap [ Config, EC2, InstanceType ]
+      InstanceInitiatedShutdownBehavior: stop
+      Monitoring: true
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+              VolumeType: gp2
+              VolumeSize: 8
+      Tags:
+        - Key: Name
+          Value: taskleaf-ec2-a
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          PrivateIpAddress: 10.0.10.10
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          SubnetId: !ImportValue taskleaf-public-subnet-a-id
+      Tenancy: default
+
+  EC2C:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0cea7ceaa242f4ad6
+      InstanceInitiatedShutdownBehavior: stop
+      InstanceType: t2.micro
+      KeyName:
+        Ref: KeyName
+      Monitoring: 'true'
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+              VolumeType: gp2
+              VolumeSize: 8
+      Tags:
+        - Key: Name
+          Value: taskleaf-ec2-c
+      NetworkInterfaces:
+        - AssociatePublicIpAddress: true
+          PrivateIpAddress: 10.0.11.10
+          DeviceIndex: 0
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          SubnetId: !ImportValue taskleaf-public-subnet-c-id
+      Tenancy: default 
+
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Connect 22 80 3000'
+      GroupName: taskleaf-ec2-sg
+      VpcId: !ImportValue taskleaf-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0 
+              
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: taskleaf-alb
+      Scheme: internet-facing
+      SecurityGroups:
+        - Ref: ALBSecurityGroup
+      Subnets:
+        - !ImportValue taskleaf-public-subnet-a-id
+        - !ImportValue taskleaf-public-subnet-c-id
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn:
+            Ref: ALBTargetGroup
+      LoadBalancerArn:
+          Ref: ALB
+      Port: 80
+      Protocol: HTTP
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: '80'
+      VpcId: !ImportValue taskleaf-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckPath: "/"
+      HealthCheckProtocol: HTTP
+      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200'
+      Name: taskleaf-alb-tg
+      Port: 80
+      Protocol: HTTP   # Protocolの値によってALBとNLBを区別
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: '20'
+      Targets:
+        - Id: !Ref EC2A
+        - Id: !Ref EC2C
+      Port: 80
+      UnhealthyThresholdCount: 3
+      VpcId: !ImportValue taskleaf-vpc-id
+
+
+
+# Outputs:
+#   StackEC2A:
+#     Description: The ID of the EC2 a
+#     Value: !Ref EC2A
+#     Export:
+#       Name: taskleaf-ec2-a
+#   StackEC2C:
+#     Description: The ID of the EC2 c
+#     Value: !Ref EC2C
+#     Export:
+#       Name: taskleaf-ec2-c

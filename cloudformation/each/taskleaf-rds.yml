@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Create EC2 Instance
+
+
+
+Parameters:
+  DBUser:
+    Description: The database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: "[a-zA-Z0-9]*"
+    # AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Description: The database admin account password
+    NoEcho: 'true'
+    Type: String
+    MinLength: '6'
+    MaxLength: '41'
+    AllowedPattern: "[a-zA-Z0-9]*"
+    # AllowedPattern: "[a-zA-Z0-9]*"
+    ConstraintDescription: must contain only alphanumeric characters.
+        
+
+
+Mappings:
+  Config:
+    RDS:
+      InstanceClass: db.t2.micro
+# ------------------------------------------------------------ #
+    # Edit Project name → [  taskleaf  ]
+# ------------------------------------------------------------ #
+
+
+
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: taskleaf-db-subnet-group
+      DBSubnetGroupDescription: DB subnet group
+      SubnetIds:
+      - !ImportValue taskleaf-private-subnet-a-id
+      - !ImportValue taskleaf-private-subnet-c-id
+
+  RDS:
+    Type: AWS::RDS::DBInstance
+    DependsOn: DBSubnetGroup
+    Properties:
+      DBInstanceIdentifier: taskleaf-rds
+      Engine: MySQL
+      EngineVersion: '5.7.22'
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      # DBClusterIdentifier: !Ref RDSCluster
+      DBInstanceClass: !FindInMap [ Config, RDS, InstanceClass ]
+      StorageType: gp2
+      PubliclyAccessible: false
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: false
+      PreferredBackupWindow: "18:00-18:30"
+      PreferredMaintenanceWindow: "sat:19:00-sat:19:30"
+      AutoMinorVersionUpgrade: false
+      Port: 3306
+      VPCSecurityGroups: 
+        - !GetAtt RDSSecurityGroup.GroupId   # 倫理IDではなく物理ID
+      CopyTagsToSnapshot: true
+      BackupRetentionPeriod: 30
+      MultiAZ: 'true'
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: 'Connect 3306'
+      GroupName: taskleaf-rds-sg
+      VpcId: !ImportValue taskleaf-vpc-id
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0

@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Atach DNS to Route53
+
+
+Resources: 
+  zonehypselodoriszephyrawork: 
+    Type: AWS::Route53::HostedZone
+    Properties: 
+      Name: hypselodoris-zephyra.work.
+
+  dnshypselodoriszephyrawork:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId:
+        Ref: zonehypselodoriszephyrawork
+      RecordSets: 
+          Name: hypselodoris-zephyra.work.
+          Type: A
+          AliasTarget: 
+            HostedZoneId: Z14GRHDCWA56QT
+            DNSName: dualstack.elb-raise-560206018.ap-northeast-1.elb.amazonaws.com
