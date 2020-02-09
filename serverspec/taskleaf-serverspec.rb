@@ -1,5 +1,8 @@
 require 'spec_helper'
 
+
+#describe package('    '), :if => os[:family] == 'amazon' do
+
 #chown
 %w{
   /var
@@ -42,13 +45,13 @@ describe command('ruby -v') do
 end
 
 #node.js
-describe package('nodejs'), :if => os[:family] == 'amazon' do
+describe package('nodejs') do
   it { should be_installed }
 end
 
 #yarn
 describe command('yarn -v') do
-  its(:stdout) { should match /1/ }
+  its(:stdout) { should match /1\.21\.1/ }
 end
 
 #rails
@@ -66,11 +69,11 @@ describe command('ps aux | grep unicorn') do
 end
 
 #nginx
-describe package('nginx'), :if => os[:family] == 'amazon' do
+describe package('nginx') do
   it { should be_installed }
 end
 
-describe service('nginx'), :if => os[:family] == 'amazon' do
+describe service('nginx') do
   it { should be_enabled }
   it { should be_running }
 end
