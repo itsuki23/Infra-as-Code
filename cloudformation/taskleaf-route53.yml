@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Create taskleaf DNS [Route53]
+
+# Resources: 
+#   LoadBlancerDNSRecord:
+#     Type: AWS::Route53::RecordSet
+#     Properties:
+#       HostedZoneName: itsuki.com.
+#       Type: A
+#       Name: itsuki.com.
+#       AliasTarget:
+#         DNSName: taskleaf-alb-1737047929.us-east-2.elb.amazonaws.com.
+#         HostedZoneId: Z1D9KD1OGEMC8X
+
+Resources: 
+  zoneitsuki: 
+    Type: AWS::Route53::HostedZone
+    Properties: 
+      Name: itsuki.com.
+
+  dnshypselodoriszephyrawork:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId:
+        Ref: zoneitsuki
+      RecordSets: 
+        Name: itsuki.com.
+        Type: A
+        AliasTarget: 
+          HostedZoneId: Z1D9KD1OGEMC8X
+          DNSName: taskleaf-alb-1737047929.us-east-2.elb.amazonaws.com.
