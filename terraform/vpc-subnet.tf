@@ -12,8 +12,6 @@ resource "aws_vpc" "public" {
   tags                 = { "Name" = "taskleaf-vpc" }
 }
 
-
-
 # ------------------------------
 #  InternetGateway
 # ------------------------------
@@ -22,8 +20,6 @@ resource "aws_internet_gateway" "public" {
   vpc_id = aws_vpc.public.id
   tags   = { "Name" = "taskleaf-igw" }
 }
-
-
 
 # ------------------------------
 #  RouteTable
@@ -55,8 +51,6 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.public.id
   tags   = { "Name" = "taskleaf-private-rt" }
 }
-
-
 
 # ------------------------------
 #  Subnet
@@ -96,8 +90,6 @@ resource "aws_subnet" "private_1c" {
   map_public_ip_on_launch = false
   tags                    = { "Name" = "taskleaf-private-subnet-1c" }
 }
-
-
 
 # ------------------------------
 #  Association
