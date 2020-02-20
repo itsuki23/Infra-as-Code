@@ -9,7 +9,7 @@ resource "aws_db_instance" "rds" {
   engine                     = "mysql"
   engine_version             = "8.0.15"
   instance_class             = "db.t2.micro"
-  name                       = "taskleaf-db"
+  name                       = "taskleaf_db"
   username                   = "root"
   password                   = "password"
   parameter_group_name       = "default.mysql8.0"
@@ -17,7 +17,7 @@ resource "aws_db_instance" "rds" {
   availability_zone          = "ap-northeast-1a"
   backup_retention_period    = 7
   backup_window              = "17:21-17:51"
-  db_subnet_group_name       = "taskleaf_rds_subnet_group"
+  db_subnet_group_name       = aws_db_subnet_group.rds.name
   deletion_protection        = false
   skip_final_snapshot        = true
 }
@@ -40,7 +40,7 @@ resource "aws_db_subnet_group" "rds" {
 # ------------------------------
 
 resource "aws_security_group" "private_rds" {
-  name        = "taskleaf-ec2-sg"
+  name        = "taskleaf-rds-sg"
   description = "Allow ssh http https"
   vpc_id      = aws_vpc.public.id
 

@@ -23,21 +23,56 @@ output "alb_dns_name" {
 #  Listener + alb + tg
 # ------------------------------
 
-# http listener
-resource "aws_lb_listener" "http" {
+# http listener to https
+resource "aws_lb_listener" "http_to_https" {
   load_balancer_arn  = aws_lb.public.arn
   port               = "80"
   protocol           = "HTTP"
   default_action {
+    type             = "redirect"
+    target_group_arn = aws_lb_target_group.public.arn
+    redirect {
+      port           = "443"
+      protocol       = "HTTPS"
+      status_code    = "HTTP_301"
+    }
+  }
+}
+
+# https listener
+resource "aws_lb_listener" "https" {
+  load_balancer_arn  = aws_lb.public.arn
+  port               = "443"
+  protocol           = "HTTPS"
+  ssl_policy         = "ELBSecurityPolicy-2016-08"
+  certificate_arn    = aws_acm_certificate.ssl.arn
+  default_action { 
     type             = "fixed-response"
     target_group_arn = aws_lb_target_group.public.arn
     fixed_response {
       content_type   = "text/plain"
-      message_body   = "これは[HTTP]です"
+      message_body   = "これは[HTTPS]です"
       status_code    = "200"
     }
+    # type             = "forward"
+    # target_group_arn = aws_lb_target_group.public.arn
   }
 }
+
+# # Listener-rule for https
+# resource "aws_lb_listener_rule" "public" {
+#   listener_arn = aws_lb_listener.https.arn
+#   # この数字が低いルールが優先的に適用
+#   priority     = 100
+#   action {
+#     type   = "forward"
+#     target_group_arn = aws_lb_target_group.public.arn
+#   }
+#   condition {
+#     field  = "path-pattern"
+#     values = ["/*"]
+#   }
+# }
 
 # ------------------------------
 #  TargetGroup
@@ -45,7 +80,8 @@ resource "aws_lb_listener" "http" {
 
 resource "aws_lb_target_group" "public" {
   name        = "taskleaf-alb-tg"
-  target_type = "ip"
+  # target_type = "ip"
+  # defaultはインスタンス ipに設定するとattachmentのtarget_idでエラー
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.public.id
