@@ -2,14 +2,14 @@
 #  Route53
 # ------------------------------
 
-# host-zone 参照
+# host-zone 参照 (コンソールで作成済み)
 data "aws_route53_zone" "host_zone" {
-  name = "climb-match.work"
+  name = "climb-match.work."
 }
 
 # host-zone 定義
 resource "aws_route53_zone" "host_zone" {
-  name = "climb-match.work"
+  name = "climb-match.work."
 }
 
 # dns-record
