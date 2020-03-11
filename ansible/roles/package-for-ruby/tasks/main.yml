@@ -1,0 +1,52 @@
+---
+############################################################
+# package from yum for ruby    |yum list installed|
+############################################################
+- name: install packages for ruby
+  yum:
+    name: "{{ item }}"
+  with_items:
+    - git
+    - patch    # ??
+    - gcc
+    - gcc-c++    # for ruby
+    - openssl-devel    # SSL
+    - libyaml-devel    # yaml
+    - readline-devel    # command系のscriptを実行するのに必要
+    - libicu-devel    # ICU Unicodeと国際化
+    - zlib-devel    # 圧縮library
+    - libffi-devel    # 外部関数interface(cとruby間？)
+    - mysql-devel    # for gem(mysql2)
+    - ImageMagick    # for edit image-photo↓
+    - ImageMagick-devel
+    # - make    # => already installed
+    # - libxml2    # for gem(nokogiri)↓  => already installed
+    # - libxml2-devel
+    # - libxslt
+    # - libxslt-devel
+    # - epel-release    # for nginx => error
+    # - sqlite3-dev    # no need??
+
+############################################################
+# yarn    |yarn -version|
+############################################################
+- name: install repo yarn    # for gem(webpacker)
+  shell: curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
+
+- name: install yarn
+  yum:
+    name: yarn
+    state: present    # latest後
+
+############################################################
+# node.js    |node --version|
+############################################################
+- name: setup node.js   # compile => need js runtime(for server side) => need node.js
+  shell: curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash -
+
+- name: install node.js
+  yum:
+    name: nodejs
+    state: present
+
+

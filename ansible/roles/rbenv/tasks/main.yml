@@ -1,0 +1,65 @@
+---
+############################################################
+# rbenv
+############################################################
+- name: install rbenv
+  git:
+    repo: https://github.com/sstephenson/rbenv.git
+    dest: /usr/local/rbenv
+
+# echo $PATH => ls user/local/bin/
+- name: path for rbenv
+  template:
+    src: roles/rbenv/templates/rbenv_path.sh.j2
+    dest: /etc/profile.d/rbenv.sh
+    # become: no
+    owner: "{{ __working_user }}"
+    group: "{{ __working_user }}"
+    # mode: 0755
+
+- name: activate path for rbenv
+  shell: |
+    bash -lc  "source ~/.bash_profile"
+
+  # /bin/bash -lc  "source /etc/profile.d/rbenv.sh"
+  # become: no
+  # when: current_ruby_version.stdout != __version
+
+############################################################
+# ruby-build
+############################################################
+
+- name: install ruby-build
+  git:
+    repo: https://github.com/sstephenson/ruby-build.git
+    dest: /usr/local/rbenv/plugins/ruby-build
+
+############################################################
+# ruby
+############################################################
+
+- name: install ruby
+  shell: bash -lc "rbenv install {{ __ruby_version }}"  # --skip-existing 今は抜いて確認
+
+- name: global & rehash
+  shell: bash -lc "rbenv global {{ __ruby_version }} && rbenv rehash"
+
+- name: check current ruby version
+  shell: |
+    bash -lc "ruby -v | grep -oP '^ruby \d{1}.\d{1}.\d{1}' | cut -f 2 -d ' '"
+  args:
+  register: current_ruby_version
+  become_user: "{{ __working_user }}"
+  changed_when: False
+
+  # shellはbin/shを使うので明示的にbashを指定(-lc "  ")
+  # grep -o(only matching) P(Perl正規表現) ruby(以外) \d(単数指定) {1}(1文字)
+  # cut(必要な情報だけ切り取る) -f(field:項目数指定) 2(2項目目) -d(?) ␣('')で区切った
+  # changed_when: falseにすると実行後にchangeにカウントされない
+
+############################################################
+# gem bundler global
+############################################################
+- name: install bundler
+  shell: bash -lc "gem install bundler"
+
