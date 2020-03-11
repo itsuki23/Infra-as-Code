@@ -1,0 +1,6 @@
+---
+__ruby_version: 2.5.1
+__bundler_version: 2.02
+__rails__version: 5.2.4.1    # or 5.2.1
+
+# __rails_new: False
