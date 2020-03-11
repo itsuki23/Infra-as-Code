@@ -19,8 +19,9 @@
 
 - name: activate path for rbenv
   shell: |
-    /bin/bash -lc  "source /etc/profile.d/rbenv.sh"
-  # /bin/bash -lc  "source ~/.bash_profile"
+    bash -lc  "source ~/.bash_profile"
+
+  # /bin/bash -lc  "source /etc/profile.d/rbenv.sh"
   # become: no
   # when: current_ruby_version.stdout != __version
 
@@ -38,16 +39,15 @@
 ############################################################
 
 - name: install ruby
-  shell: bin/bash -lc "rbenv install {{ __ruby_version }}"  # --skip-existing 今は抜いて確認
+  shell: bash -lc "rbenv install {{ __ruby_version }}"  # --skip-existing 今は抜いて確認
 
 - name: global & rehash
-  shell: bin/bash -lc "rbenv global {{ __ruby_version }} && rbenv rehash"
+  shell: bash -lc "rbenv global {{ __ruby_version }} && rbenv rehash"
 
 - name: check current ruby version
   shell: |
-    /bin/bash -lc "ruby -v | grep -oP '^ruby \d{1}.\d{1}.\d{1}' | cut -f 2 -d ' '"
+    bash -lc "ruby -v | grep -oP '^ruby \d{1}.\d{1}.\d{1}' | cut -f 2 -d ' '"
   args:
-    chdir: "{{ __app_dir }}"
   register: current_ruby_version
   become_user: "{{ __working_user }}"
   changed_when: False
@@ -55,25 +55,11 @@
   # shellはbin/shを使うので明示的にbashを指定(-lc "  ")
   # grep -o(only matching) P(Perl正規表現) ruby(以外) \d(単数指定) {1}(1文字)
   # cut(必要な情報だけ切り取る) -f(field:項目数指定) 2(2項目目) -d(?) ␣('')で区切った
-
-  # chdir コマンド実行前にcd移動する
   # changed_when: falseにすると実行後にchangeにカウントされない
 
 ############################################################
-# gem bundler
+# gem bundler global
 ############################################################
-
 - name: install bundler
-  gem:
-    name: bundler
-    user_install: no
-    version: "{{ __bundler_version }}"
-    executable: /usr/local/rbenv/shims/gem
+  shell: bash -lc "gem install bundler"
 
-############################################################
-# gem rails
-############################################################
-- name: install Rails
-  shell: bash -lc "gem install {{ item }}"
-  with_items:
-    - rails -v "{{ __rails_version }}"
