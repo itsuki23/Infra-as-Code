@@ -39,9 +39,6 @@
 
 - name: install ruby
   shell: bin/bash -lc "rbenv install {{ __ruby_version }}"  # --skip-existing 今は抜いて確認
-  args:
-    chdir: "{{ __app_dir }}"
-  become_user: "{{ __working_user }}"
 
 - name: global & rehash
   shell: bin/bash -lc "rbenv global {{ __ruby_version }} && rbenv rehash"
