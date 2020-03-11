@@ -1,7 +1,0 @@
----
-- name: railsのappディレクトリを作成
-  become: no
-  file:
-    path: "{{ __app_dir }}"
-    state: directory
-    mode: 0755
