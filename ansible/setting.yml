@@ -1,0 +1,15 @@
+---
+- name: setting for rails-app
+  hosts: all
+  # become: yes
+  roles:
+    - 6_config
+
+  vars:
+    __app_name: hitch_climb
+    __working_user: ec2-user
+    __app_dir: /var/www/hitch_climb/
+    __app_secret_key_dir: /var/www/hitch_climb/config/
+    __app_credentials_path: /var/www/taskelaf/config/credentials.yml.enc
+
+    __server_name: "18.179.8.137"

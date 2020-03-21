@@ -10,7 +10,7 @@
 # echo $PATH => ls user/local/bin/
 - name: path for rbenv
   template:
-    src: roles/rbenv/templates/rbenv_path.sh.j2
+    src: roles/4_ruby/templates/rbenv_path.sh.j2
     dest: /etc/profile.d/rbenv.sh
     # become: no
     owner: "{{ __working_user }}"
@@ -39,18 +39,21 @@
 ############################################################
 
 - name: install ruby
-  shell: bash -lc "rbenv install {{ __ruby_version }}"  # --skip-existing 今は抜いて確認
+  shell: bash -lc "rbenv install -s "{{ __ruby_version }}" "
 
 - name: global & rehash
-  shell: bash -lc "rbenv global {{ __ruby_version }} && rbenv rehash"
+  shell: bash -lc "rbenv global "{{ __ruby_version }}" && rbenv rehash"
 
 - name: check current ruby version
   shell: |
-    bash -lc "ruby -v | grep -oP '^ruby \d{1}.\d{1}.\d{1}' | cut -f 2 -d ' '"
+    bash -lc "ruby -v"
   args:
-  register: current_ruby_version
+  register: ruby_version
   become_user: "{{ __working_user }}"
   changed_when: False
+
+- name: ruby -v
+  debug: var=ruby_version
 
   # shellはbin/shを使うので明示的にbashを指定(-lc "  ")
   # grep -o(only matching) P(Perl正規表現) ruby(以外) \d(単数指定) {1}(1文字)
@@ -61,5 +64,8 @@
 # gem bundler global
 ############################################################
 - name: install bundler
-  shell: bash -lc "gem install bundler"
+  shell: bash -lc "gem install bundler -v "{{__bundler_version}}" "
+
+- name: Install Rails
+  shell: bash -lc "gem install rails -v "{{ __rails_version }}" "
 
