@@ -1,0 +1,6 @@
+---
+# - name: web-vars    
+#   vars:
+#     __working_user: ec2-user
+#     __app_dir: /var/www/rails/
+#     __app_name: hitch_climb

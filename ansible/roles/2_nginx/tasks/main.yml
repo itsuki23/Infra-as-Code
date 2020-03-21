@@ -20,6 +20,21 @@
     name: nginx
     state: present
 
+- name: insert nginx conf template
+  become: yes
+  template:
+    src: roles/2_nginx/templates/nginx.conf.j2
+    dest: /etc/nginx/conf.d
+
+- name: chmod 775 nginx
+  file:
+    path: "/var/lib/"
+    state: directory
+    owner: "{{ __working_user }}"
+    group: "{{ __working_user }}"
+    recurse: yes
+    mode: -775
+
 - name: nginx restart(activate) enabled
   systemd:
     name: nginx.service

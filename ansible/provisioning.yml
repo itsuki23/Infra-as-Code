@@ -3,16 +3,14 @@
   hosts: all
   become: yes
   roles:
-    - yum
-    - nginx
-    - package-for-ruby
-    - rbenv
-    # - mysql
-
+    - 1_yum
+    - 2_nginx
+    - 3_package-for-ruby
+    - 4_ruby
+    - 5_mysql
 
   vars:
+    __app_name: hitch_climb
     __working_user: ec2-user
-    __app_dir: /var/www/html/
-    __app_name: taskleaf
-
+    __app_dir: /var/www/hitch_climb/
 

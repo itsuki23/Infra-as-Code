@@ -1,0 +1,72 @@
+---
+############################################################
+# mysql 8.0    |mysql, mysqld --version|
+############################################################
+- name: install mysql repo
+  yum:
+    name: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
+    state: present
+ 
+# - name: edit repo for activate mysql 8
+#   shell: |
+#     yum-config-manager --enable mysql80-community
+- name: edit repo for non_activate mysql 8
+  shell: |
+    sudo yum-config-manager --disable mysql80-community
+
+- name: edit repo for non_activate mysql 5.7
+  shell: |
+    sudo yum-config-manager --enable mysql57-community 
+
+
+- name: install mysql 5.7 
+  yum:
+    name: mysql-community-server
+    state: present
+
+# - name: Install MySQL
+#   yum:
+#     name: ['mysql-community-server',
+#           'mysql-community-client',
+#            'mysql-community-common',
+#            'mysql-community-libs']
+#     state: present
+
+- name: start enable mysql
+  service:
+    name: mysqld
+    state: started
+    enabled: yes
+
+############################################################
+# 参考
+# https://qiita.com/2no553/items/952dbb8df9a228195189  基本的なインストール方法
+# https://qiita.com/park-jh/items/1e118580ae1deab70f99 インストール時の挙動、依存関係
+# https://qiita.com/miqpim/items/5c519a9979d9b269d47e
+############################################################
+
+
+
+# - name: non-passwoed config mysql
+#   shell: |
+#     mysqld --initialize-insecure --user=mysql
+
+# - name: restart mysql
+#   become: yes
+#   service:
+#     name: mysqld
+#     state: restarted
+
+# - name: Edit /root/.my.cnf
+#   template:
+#     src: roles/mysql/templates/my.cnf.j2
+#     dest: /root/.my.cnf
+#     owner: root
+#     group: root
+#     mode: 0600
+
+############################################################
+# 参考
+# https://yoku0825.blogspot.com/2018/01/mysql-804.html mysql 8以降のdefault認証形式
+# https://qiita.com/park-jh/items/34e6434d71e685a48f07 ansible mysql まとめ
+############################################################
