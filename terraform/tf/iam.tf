@@ -1,3 +1,7 @@
+# nothing var
+# share IAM => possible to use other project
+# if already exist, must not to run
+
 # ------------------------------
 #  IAM for App-img to S3
 # ------------------------------

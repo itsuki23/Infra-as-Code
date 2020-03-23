@@ -1,9 +1,17 @@
 # ------------------------------
+#  Var
+# ------------------------------
+
+# prefix = climb
+
+
+
+# ------------------------------
 #  ApplicationLoadBalancer
 # ------------------------------
 
 resource "aws_lb" "public" {
-  name                       = "taskleaf-alb"
+  name                       = "climb-alb"
   load_balancer_type         = "application"
   idle_timeout               = 60
   internal                   = false
@@ -14,7 +22,7 @@ resource "aws_lb" "public" {
   ]
   security_groups = [aws_security_group.alb.id]
 }
-output "alb_dns_name" {
+output "ALB_dns_name" {
   value = aws_lb.public.dns_name
 }
 # curl http://**** で確認
@@ -79,7 +87,7 @@ resource "aws_lb_listener" "https" {
 # ------------------------------
 
 resource "aws_lb_target_group" "public" {
-  name        = "taskleaf-alb-tg"
+  name        = "climb-alb-tg"
   # target_type = "ip"
   # defaultはインスタンス ipに設定するとattachmentのtarget_idでエラー
   port        = 80
@@ -119,7 +127,7 @@ resource "aws_lb_target_group_attachment" "public_1c" {
 # ------------------------------
 
 resource "aws_security_group" "alb" {
-  name        = "taskleaf-alb-sg"
+  name        = "climb-alb-sg"
   description = "Allow http https"
   vpc_id      = aws_vpc.public.id
 
