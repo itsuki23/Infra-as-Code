@@ -1,0 +1,24 @@
+---
+############################################################
+# bash path
+############################################################
+
+- name: Comment out of default source_path
+  become: yes
+  lineinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin'
+    line: '# Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin'
+    validate: '/usr/sbin/visudo -cf %s'
+
+- name: Enable env_reset and env_keep for PATH
+  become: yes
+  blockinfile:
+    path: /etc/sudoers
+    state: present
+    regexp: '^# Defaults   env_keep += "HOME"'
+    content: |
+      Defaults   env_reset
+      Defaults   env_keep += "PATH"
+    validate: '/usr/sbin/visudo -cf %s'

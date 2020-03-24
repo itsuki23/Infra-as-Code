@@ -3,8 +3,10 @@
 # package from yum for ruby    |yum list installed|
 ############################################################
 - name: install packages for ruby
+  become: yes
   yum:
     name: "{{ item }}"
+    state: present
   with_items:
     - git
     - patch    # ??
@@ -31,12 +33,14 @@
 # yarn    |yarn -version|
 ############################################################
 - name: install repo yarn    # for gem(webpacker)
+  become: yes
   shell: curl -sL https://dl.yarnpkg.com/rpm/yarn.repo | sudo tee /etc/yum.repos.d/yarn.repo
 
 - name: install yarn
+  become: yes
   yum:
     name: yarn
-    state: present    # latest後
+    state: present
 
 ############################################################
 # node.js    |node --version|
@@ -45,6 +49,7 @@
   shell: curl -sL https://rpm.nodesource.com/setup_12.x | sudo bash -
 
 - name: install node.js
+  become: yes
   yum:
     name: nodejs
     state: present

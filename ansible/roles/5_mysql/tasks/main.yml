@@ -3,40 +3,42 @@
 # mysql 8.0    |mysql, mysqld --version|
 ############################################################
 - name: install mysql repo
+  become: yes
   yum:
     name: https://dev.mysql.com/get/mysql80-community-release-el7-3.noarch.rpm
     state: present
  
-# - name: edit repo for activate mysql 8
-#   shell: |
-#     yum-config-manager --enable mysql80-community
-- name: edit repo for non_activate mysql 8
+- name: edit repo for activate mysql 8
+  become: yes
   shell: |
-    sudo yum-config-manager --disable mysql80-community
+    yum-config-manager --enable mysql80-community
 
-- name: edit repo for non_activate mysql 5.7
-  shell: |
-    sudo yum-config-manager --enable mysql57-community 
-
-
-- name: install mysql 5.7 
+- name: install mysql 8
+  become: yes
   yum:
-    name: mysql-community-server
+    name: "{{ item }}"
     state: present
-
-# - name: Install MySQL
-#   yum:
-#     name: ['mysql-community-server',
-#           'mysql-community-client',
-#            'mysql-community-common',
-#            'mysql-community-libs']
-#     state: present
+  with_items:
+    - mysql-community-server
+    - mysql-community-client
+    - mysql-community-common
+    - mysql-community-libs
 
 - name: start enable mysql
+  become: yes
   service:
     name: mysqld
     state: started
     enabled: yes
+
+# mysql for ver5.7    
+# - name: edit repo for non_activate mysql 8
+#   shell: |
+#     sudo yum-config-manager --disable mysql80-community
+
+# - name: edit repo for non_activate mysql 5.7
+#   shell: |
+#     sudo yum-config-manager --enable mysql57-community
 
 ############################################################
 # 参考

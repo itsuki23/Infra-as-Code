@@ -4,7 +4,10 @@ upstream app_server {
 
 server {
   listen 80;
-  server_name 13.230.150.228;
+  server_name 54.249.25.143;
+  server_name climb-alb-1218765740.ap-northeast-1.elb.amazonaws.com;
+  server_name climb-match.work;
+
   client_max_body_size 2g;
   root /var/www/"{{ __app_name }}"/current/public;
 
