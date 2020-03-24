@@ -1,10 +1,19 @@
 # ------------------------------
+#  Var
+# ------------------------------
+
+# prefix = climb
+# region = "ap-northeast-1"
+
+
+
+# ------------------------------
 #  S3 for Web-img
 # ------------------------------
 
 # # s3 for web-img
 resource "aws_s3_bucket" "web_img" {
-  bucket = "taskleaf-web-img"
+  bucket = "climb-web-img"
   region = "ap-northeast-1"
 }
 

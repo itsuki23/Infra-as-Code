@@ -1,0 +1,9 @@
+---
+############################################################
+# ssh key to ec2
+############################################################
+
+- name: ssh key to ec2 for cap
+  template:
+    src: /Users/mac/.ssh/id_itsuki23_git_rsa
+    dest: /home/ec2-user/.ssh

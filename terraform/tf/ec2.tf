@@ -1,4 +1,17 @@
 # ------------------------------
+#  Var
+# ------------------------------
+
+# prefix = climb
+
+# ec2_1a ip = 10.1.10.10
+# ec2_1c ip = 10.1.11.10
+# ec2_1a az = ap-northeast-1a
+# ec2_1c az = ap-northeast-1c
+
+
+
+# ------------------------------
 #  ec2
 # ------------------------------
 
@@ -9,7 +22,7 @@ resource "aws_instance" "ec2_1a" {
   availability_zone = "ap-northeast-1a"
   subnet_id         = aws_subnet.public_1a.id
   security_groups   = [aws_security_group.ec2.id]
-  private_ip        = "10.0.30.10"
+  private_ip        = "10.1.10.10"
   ebs_optimized     = false
   monitoring        = false
   source_dest_check = false
@@ -18,8 +31,13 @@ resource "aws_instance" "ec2_1a" {
     volume_size           = 8
     delete_on_termination = false
   }
-  tags = { "Name" = "taskleaf-ec2-1a" }
+  tags = { "Name" = "climb-ec2-1a" }
 }
+output "EC2_1a_public_IP" {
+  value = aws_instance.ec2_1a.public_ip
+}
+
+
 
 resource "aws_instance" "ec2_1c" {
   key_name          = "raise"
@@ -28,7 +46,7 @@ resource "aws_instance" "ec2_1c" {
   availability_zone = "ap-northeast-1c"
   subnet_id         = aws_subnet.public_1c.id
   security_groups   = [aws_security_group.ec2.id]
-  private_ip        = "10.0.31.10"
+  private_ip        = "10.1.11.10"
   ebs_optimized     = false
   monitoring        = false
   source_dest_check = false
@@ -37,7 +55,10 @@ resource "aws_instance" "ec2_1c" {
     volume_size           = 8
     delete_on_termination = false
   }
-  tags = { "Name" = "taskleaf-ec2-1c" }
+  tags = { "Name" = "climb-ec2-1c" }
+}
+output "EC2_1c_public_IP" {
+  value = aws_instance.ec2_1c.public_ip
 }
 # associate_public_ip_address = true
 #  ↪︎ apply時の差分によるエラーが出るらしい
@@ -50,7 +71,7 @@ resource "aws_instance" "ec2_1c" {
 # ------------------------------
 
 resource "aws_security_group" "ec2" {
-  name        = "taskleaf-ec2-sg"
+  name        = "climb-ec2-sg"
   description = "Allow ssh http https"
   vpc_id      = aws_vpc.public.id
 

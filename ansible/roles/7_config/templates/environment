@@ -1,0 +1,8 @@
+DB_NAME=climb_db
+#DB_USERNAME=root
+DB_PASSWORD=password
+DB_PORT="3306"
+#DB_HOSTNAME="localhost"
+DB_HOSTNAME=climb-rds.chtyvyhdfwvq.ap-northeast-1.rds.amazonaws.com
+
+SECRET_KEY_BASE=81d0d9a57a28920527277c624ef9fe8727d62cffc7dfab01dbd3335addb49119faba0f3cecf50401e3688ff255ed100d2d7361004bf339cea4db277f1639b751

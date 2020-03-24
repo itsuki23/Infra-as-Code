@@ -1,5 +1,9 @@
 .ssh
 .idea
 hosts
+atras
 
-roles/config/templates/master.key
+roles/7_config/templates/.env.j2
+roles/7_config/templates/master.key.j2
+roles/7_config/templates/database.yml.j2
+roles/7_config/templates/environment.j2

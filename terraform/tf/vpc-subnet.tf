@@ -1,15 +1,30 @@
-# prefix = taskleaf
+# ------------------------------
+#  Var
+# ------------------------------
+
+# prefix = climb
+
+# vpc cidr = 10.1.0.0/16
+# subnet public  1a cidr = 10.1.10.0/24
+# subnet public  1c cidr = 10.1.11.0/24
+# subnet private 1a cidr = 10.1.20.0/24
+# subnet private 1c cidr = 10.1.21.0/24
+
+# public  az = ap-northeast-1a
+# private az = ap-northeast-1c
+
+
 
 # ------------------------------
 #  VPC
 # ------------------------------
 
 resource "aws_vpc" "public" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = "10.1.0.0/16"
   instance_tenancy     = "default"
   enable_dns_support   = true
   enable_dns_hostnames = true
-  tags                 = { "Name" = "taskleaf-vpc" }
+  tags                 = { "Name" = "climb-vpc" }
 }
 
 # ------------------------------
@@ -18,7 +33,7 @@ resource "aws_vpc" "public" {
 
 resource "aws_internet_gateway" "public" {
   vpc_id = aws_vpc.public.id
-  tags   = { "Name" = "taskleaf-igw" }
+  tags   = { "Name" = "climb-igw" }
 }
 
 # ------------------------------
@@ -28,7 +43,7 @@ resource "aws_internet_gateway" "public" {
 # pub-rt in vpc → これだけではvpcと紐づかない
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.public.id
-  tags   = { "Name" = "taskleaf-public-rt" }
+  tags   = { "Name" = "climb-public-rt" }
 }
 
 # pub-rt + igw
@@ -49,7 +64,7 @@ resource "aws_main_route_table_association" "public" {
 # pri-rt in vpc
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.public.id
-  tags   = { "Name" = "taskleaf-private-rt" }
+  tags   = { "Name" = "climb-private-rt" }
 }
 
 # ------------------------------
@@ -59,17 +74,17 @@ resource "aws_route_table" "private" {
 # pub-sub
 resource "aws_subnet" "public_1a" {
   vpc_id                  = aws_vpc.public.id
-  cidr_block              = "10.0.30.0/24"
+  cidr_block              = "10.1.10.0/24"
   availability_zone       = "ap-northeast-1a"
   map_public_ip_on_launch = true
-  tags                    = { "Name" = "taskleaf-public-subnet-1a" }
+  tags                    = { "Name" = "climb-public-subnet-1a" }
 }
 resource "aws_subnet" "public_1c" {
   vpc_id                  = aws_vpc.public.id
-  cidr_block              = "10.0.31.0/24"
+  cidr_block              = "10.1.11.0/24"
   availability_zone       = "ap-northeast-1c"
   map_public_ip_on_launch = true
-  tags                    = { "Name" = "taskleaf-public-subnet-1c" }
+  tags                    = { "Name" = "climb-public-subnet-1c" }
 }
 
 
@@ -77,18 +92,18 @@ resource "aws_subnet" "public_1c" {
 # pri-sub
 resource "aws_subnet" "private_1a" {
   vpc_id                  = aws_vpc.public.id
-  cidr_block              = "10.0.40.0/24"
+  cidr_block              = "10.1.20.0/24"
   availability_zone       = "ap-northeast-1a"
   map_public_ip_on_launch = false
-  tags                    = { "Name" = "taskleaf-private-subnet-1a" }
+  tags                    = { "Name" = "climb-private-subnet-1a" }
 }
 
 resource "aws_subnet" "private_1c" {
   vpc_id                  = aws_vpc.public.id
-  cidr_block              = "10.0.41.0/24"
+  cidr_block              = "10.1.21.0/24"
   availability_zone       = "ap-northeast-1c"
   map_public_ip_on_launch = false
-  tags                    = { "Name" = "taskleaf-private-subnet-1c" }
+  tags                    = { "Name" = "climb-private-subnet-1c" }
 }
 
 # ------------------------------

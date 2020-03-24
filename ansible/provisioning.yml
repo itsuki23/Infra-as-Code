@@ -1,16 +1,44 @@
 ---
+############################################################
+# provisioning
+############################################################
+
 - name: provisioning for rails-app
   hosts: all
-  become: yes
+  become: no
   roles:
-    - 1_yum
-    - 2_nginx
-    - 3_package-for-ruby
-    - 4_ruby
-    - 5_mysql
+    - { role: 0_bash, tags: bash }
+    - { role: 1_yum, tags: yum }
+    - { role: 2_nginx, tags: nginx }
+    - { role: 3_package, tags: package }
+    - { role: 4_ruby, tags: ruby }
+    - { role: 5_mysql, tags: mysql }
+    - { role: 6_app, tags: app }
+    - { role: 7_config, tags: config }
+    - { role: 8_ssh, tags: ssh }
 
   vars:
     __app_name: hitch_climb
     __working_user: ec2-user
     __app_dir: /var/www/hitch_climb/
+
+
+
+############################################################
+# $ ansible-playbook -i hosts provisioning.yml --tags=***
+############################################################
+
+# if sevser change , must edit
+  # "54.249.25.143"
+  #  { IP } => file  { hosts, roles/nginx/templates/nginx.conf.j2 }
+  # also edit rails config/deploy/production.rb {IP}
+
+  # rds_endpoint: "rds-raise.chtyvyhdfwvq.ap-northeast-1.rds.amazonaws.com"
+
+
+# nginx 実行時
+# error => increase server_names_hash_bucket_size
+# sudo vi /etc/nginx/nginx.conf
+# keepalive...行の後 => 追記 server_names_hash_bucket_size 128;
+
 

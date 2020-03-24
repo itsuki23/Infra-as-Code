@@ -3,6 +3,7 @@
 # epel for nginx    |yum repolist|
 ############################################################
 - name: install epel    # epelはパッケージインストール時、リポジトリ有効化されてる (外部ライブラリ)
+  become: yes
   yum:
     name: https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
     state: present
@@ -11,11 +12,13 @@
 # nginx    |nginx -v||status nginx|
 ############################################################
 - name: install nginx package
+  become: yes
   yum:
     name: http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
     state: present
 
 - name: install nginx
+  become: yes
   yum:
     name: nginx
     state: present
@@ -24,9 +27,11 @@
   become: yes
   template:
     src: roles/2_nginx/templates/nginx.conf.j2
-    dest: /etc/nginx/conf.d
+    dest: /etc/nginx/conf.d/nginx.conf
+    state: present
 
 - name: chmod 775 nginx
+  become: yes
   file:
     path: "/var/lib/"
     state: directory
@@ -36,11 +41,12 @@
     mode: -775
 
 - name: nginx restart(activate) enabled
+  become: yes
   systemd:
     name: nginx.service
     state: restarted
     enabled: yes
-  become_user: root
+
 
   
 
