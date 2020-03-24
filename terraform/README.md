@@ -1,7 +1,7 @@
 # 構成
 > **AWS**
 
->> **ap-northeast**: VPC {app} <br>
+>> **ap-northeast-1**: VPC {app} <br>
 >>> **ap-northeast-1a**: <br>
 >>> __Public subnet 1a: <br>
 >>> ____EC2 1a {web}<br> 

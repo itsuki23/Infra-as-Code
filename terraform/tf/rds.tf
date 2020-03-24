@@ -26,6 +26,8 @@ resource "aws_db_instance" "rds" {
   availability_zone          = "ap-northeast-1a"
   backup_retention_period    = 7
   backup_window              = "17:21-17:51"
+  vpc_security_group_ids     = [aws_security_group.private_rds.id]
+# db_security_groups         = aws_security_group.private_rds
   db_subnet_group_name       = aws_db_subnet_group.rds.name
   deletion_protection        = false
   skip_final_snapshot        = true
@@ -34,6 +36,10 @@ output "RDS_end_point" {
   value = aws_db_instance.rds.endpoint
 }
 
+# security groupとの紐付けに苦戦
+# db_security_groupsはdocumentには記載があるがエラーになる
+# vpc_security_group_ids     = aws_security_group.private_rds.id ではエラー↓
+# Inappropriate value for attribute "vpc_security_group_ids": set of string required.
 
 # ------------------------------
 #  DB_SubnetGroup
@@ -54,7 +60,7 @@ resource "aws_db_subnet_group" "rds" {
 
 resource "aws_security_group" "private_rds" {
   name        = "climb-rds-sg"
-  description = "Allow ssh http https"
+  description = "Allow only 3306"
   vpc_id      = aws_vpc.public.id
 
   ingress {
