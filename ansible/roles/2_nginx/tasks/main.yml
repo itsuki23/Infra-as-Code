@@ -23,13 +23,6 @@
     name: nginx
     state: present
 
-- name: insert nginx conf template
-  become: yes
-  template:
-    src: roles/2_nginx/templates/nginx.conf.j2
-    dest: /etc/nginx/conf.d/nginx.conf
-    state: present
-
 - name: chmod 775 nginx
   become: yes
   file:
@@ -47,6 +40,12 @@
     state: restarted
     enabled: yes
 
+- name: insert nginx conf template
+  become: yes
+  template:
+    src: roles/2_nginx/templates/nginx.conf.j2
+    dest: /etc/nginx/conf.d/nginx.conf
+    # state: present
 
   
 

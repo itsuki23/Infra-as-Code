@@ -1,21 +1,22 @@
 upstream app_server {
-  server unix:/var/www/"{{ __app_name }}"/shared/tmp/sockets/unicorn.sock;
+  server unix:/var/www/{{ __app_name }}/shared/tmp/sockets/unicorn.sock;
 }
 
 server {
   listen 80;
   server_name 54.249.25.143;
-  server_name climb-alb-1218765740.ap-northeast-1.elb.amazonaws.com;
+  servir_name 54.249.56.245:
+  server_name climb-rds.chtyvyhdfwvq.ap-northeast-1.rds.amazonaws.com;
   server_name climb-match.work;
 
   client_max_body_size 2g;
-  root /var/www/"{{ __app_name }}"/current/public;
+  root /var/www/{{ __app_name }}/current/public;
 
   location ^~ /assets/ {
     gzip_static on;
     expires max;
     add_header Cache-Control public;
-    root   /var/www/"{{ __app_name }}"/current/public;
+    root   /var/www/{{ __app_name }}/current/public;
   }
 
   try_files $uri/index.html $uri @unicorn;

@@ -3,14 +3,14 @@
 # set config file
 ############################################################
 
-# - name: mkdir shared/config
-#   become: yes
-#   file:
-#     path: /var/www/{{ __app_name }}/shared/config
-#     state: directory
-#     owner: "{{ __working_user }}"
-#     group: "{{ __working_user }}"
-#     mode: 0777
+- name: mkdir shared/config
+  become: yes
+  file:
+    path: /var/www/{{ __app_name }}/shared/config
+    state: directory
+    owner: "{{ __working_user }}"
+    group: "{{ __working_user }}"
+    mode: 0777
     # = chmod
 
 # - name: Chmod of application current public
@@ -22,32 +22,40 @@
 #     group: "{{ __working_user }}"
 #     mode: 0777
 
-# - name: set master.key for credentials
-#   template:
-#     src: roles/7_config/templates/master.key.j2
-#     dest: /var/www/{{ __app_name }}/shared/config/master.key
-
-# - name: set .env for database.yml
-#   template:
-#     src: roles/7_config/templates/.env.j2
-#     dest: /var/www/{{ __app_name }}/shared/config/.env
-       
-# - name: set database.yml
-#   template:
-#     src: roles/7_config/templates/database.yml.j2
-#     dest: /var/www/{{ __app_name }}/shared/config/database.yml
-
-
-
 - name: set master.key for credentials
   template:
     src: roles/7_config/templates/master.key.j2
-    dest: /var/www/{{ __app_name }}/config/master.key
+    dest: /var/www/{{ __app_name }}/shared/config/master.key
 
 - name: set .env for database.yml
   template:
     src: roles/7_config/templates/.env.j2
-    dest: /var/www/{{ __app_name }}/.env
+    dest: /var/www/{{ __app_name }}/shared/.env
+       
+- name: set database.yml
+  template:
+    src: roles/7_config/templates/database.yml.j2
+    dest: /var/www/{{ __app_name }}/shared/config/database.yml
+
+
+
+
+
+
+# - name: set master.key for credentials2
+#   template:
+#     src: roles/7_config/templates/master.key.j2
+#     dest: /var/www/{{ __app_name }}/config/master.key
+
+# - name: set master.key for credentials
+#   template:
+#     src: roles/7_config/templates/master.key.j2
+#     dest: /var/www/{{ __app_name }}/config/master.key
+
+# - name: set .env for database.yml
+#   template:
+#     src: roles/7_config/templates/.env.j2
+#     dest: /var/www/{{ __app_name }}/.env
        
 
 

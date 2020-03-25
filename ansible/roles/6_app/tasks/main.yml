@@ -12,21 +12,21 @@
     mode: 0755
     # = chmod
 
-- name: clone app from git
-  become: yes
-  git:
-    repo: https://github.com/itsuki23/hitch_climb.git
-    dest: "{{ __app_dir }}"
+# - name: clone app from git
+#   become: yes
+#   git:
+#     repo: https://github.com/itsuki23/hitch_climb.git
+#     dest: "{{ __app_dir }}"
 
 
-- name: app chown
-  become: yes
-  file:
-    path: "{{ __app_dir }}"
-    state: directory
-    owner: "{{ __working_user }}"
-    group: "{{ __working_user }}"
-    recurse: yes
+# - name: app chown
+#   become: yes
+#   file:
+#     path: "{{ __app_dir }}"
+#     state: directory
+#     owner: "{{ __working_user }}"
+#     group: "{{ __working_user }}"
+#     recurse: yes
 
        
 
