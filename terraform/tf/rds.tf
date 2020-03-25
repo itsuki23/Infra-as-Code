@@ -41,6 +41,8 @@ output "RDS_end_point" {
 # vpc_security_group_ids     = aws_security_group.private_rds.id ではエラー↓
 # Inappropriate value for attribute "vpc_security_group_ids": set of string required.
 
+
+
 # ------------------------------
 #  DB_SubnetGroup
 # ------------------------------
@@ -53,6 +55,8 @@ resource "aws_db_subnet_group" "rds" {
     "${aws_subnet.private_1c.id}"
   ]
 }
+
+
 
 # ------------------------------
 #  SecurityGroup

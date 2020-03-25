@@ -27,6 +27,8 @@ resource "aws_vpc" "public" {
   tags                 = { "Name" = "climb-vpc" }
 }
 
+
+
 # ------------------------------
 #  InternetGateway
 # ------------------------------
@@ -35,6 +37,8 @@ resource "aws_internet_gateway" "public" {
   vpc_id = aws_vpc.public.id
   tags   = { "Name" = "climb-igw" }
 }
+
+
 
 # ------------------------------
 #  RouteTable
@@ -66,6 +70,8 @@ resource "aws_route_table" "private" {
   vpc_id = aws_vpc.public.id
   tags   = { "Name" = "climb-private-rt" }
 }
+
+
 
 # ------------------------------
 #  Subnet
@@ -105,6 +111,8 @@ resource "aws_subnet" "private_1c" {
   map_public_ip_on_launch = false
   tags                    = { "Name" = "climb-private-subnet-1c" }
 }
+
+
 
 # ------------------------------
 #  Association
