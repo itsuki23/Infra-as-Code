@@ -8,3 +8,8 @@
 * ServerSpecにてプロビジョニング環境、サーバー環境のテスト
 
 各ディレクトリにReadmeがありますので参照ください。
+
+![スライド1](https://user-images.githubusercontent.com/58794866/77598244-a54d7e80-6f44-11ea-9ff5-24e9720bb346.jpeg)
+![スライド2](https://user-images.githubusercontent.com/58794866/77598253-a7afd880-6f44-11ea-9851-1f7918c30fad.jpeg)
+![スライド3](https://user-images.githubusercontent.com/58794866/77598255-aa123280-6f44-11ea-91ad-5ed271c9a41c.jpeg)
+![スライド4](https://user-images.githubusercontent.com/58794866/77598261-ac748c80-6f44-11ea-9d08-63ef27eba85c.jpeg)
