@@ -86,6 +86,11 @@ $ aws ec2 describe-instances \
 --output table
 ```
 
+追記）もっと簡単に出力できました！
+```
+$ terraform output <output時に指定した名前>　
+```
+
 <br><br>
 
 公開鍵・秘密鍵で毎度調べなくてもよくしよう！とも考えたが以下の理由により今回は却下。
@@ -95,7 +100,7 @@ $ aws ec2 describe-instances \
 
 この辺は変更の余地あり。
 
-
+<br><br>
 
 # 参考資料
 ### 公式Document
